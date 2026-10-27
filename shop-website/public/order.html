@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>สถานะคำสั่งซื้อ | Love Shop</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="page">
+  <h1>💕 คำสั่งซื้อของคุณ</h1>
+  <div id="out" class="box">กำลังโหลด…</div>
+  <p><a href="/">← กลับไปหน้าร้าน</a></p>
+</div>
+<script>
+const id = new URLSearchParams(location.search).get('id') || ''
+const esc = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+let tries = 0
+async function load() {
+  const res = await fetch('/api/orders/' + encodeURIComponent(id))
+  if (!res.ok) { document.getElementById('out').textContent = 'ไม่พบคำสั่งซื้อ'; return }
+  const o = await res.json()
+  const paid = o.status === 'paid'
+  let h = `<p>เลขที่: <b>${esc(o.id)}</b><br>ยอดรวม: ฿${o.total.toLocaleString()}<br>สถานะ: <b>${paid ? '✅ ชำระเงินแล้ว' : '⏳ รอยืนยันการชำระเงิน'}</b></p>`
+  if (!paid) h += '<p>หากเพิ่งจ่ายเงิน หน้านี้จะอัปเดตอัตโนมัติ</p>'
+  for (const i of o.items) {
+    h += `<div class="box">${esc(i.emoji)} ${esc(i.name_th)}`
+    if (i.letter_token) {
+      const url = location.origin + '/l/' + i.letter_token
+      h += `<br>ส่งลิงก์นี้ให้ ${esc(i.to_name || 'คนพิเศษ')}:<a class="link" href="${url}" target="_blank">${url}</a><button onclick="navigator.clipboard.writeText('${url}')">คัดลอกลิงก์</button>`
+    }
+    h += '</div>'
+  }
+  document.getElementById('out').innerHTML = h
+  if (!paid && ++tries < 60) setTimeout(load, 3000)
+}
+load()
+</script>
+</body>
+</html>

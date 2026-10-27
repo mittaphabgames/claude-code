@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Love Shop | ของขวัญออนไลน์แห่งความรัก</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <div class="logo">💕 Love Shop</div>
+  <div class="actions">
+    <button id="lang">EN</button>
+    <button class="primary" id="cartBtn"></button>
+  </div>
+</header>
+<div id="mock" class="banner" hidden></div>
+
+<section class="hero">
+  <h1 data-i18n="heroTitle"></h1>
+  <p data-i18n="heroSub"></p>
+</section>
+<main><div class="grid" id="grid"></div></main>
+
+<!-- เขียนจดหมาย -->
+<dialog id="composer">
+  <form method="dialog" id="composeForm">
+    <h2 id="cTitle"></h2>
+    <label><span data-i18n="to"></span><input id="cTo" maxlength="100"></label>
+    <label><span data-i18n="msg"></span><textarea id="cMsg" rows="7" maxlength="3000" required></textarea></label>
+    <label><span data-i18n="from"></span><input id="cFrom" maxlength="100"></label>
+    <label><span data-i18n="theme"></span>
+      <select id="cTheme"><option value="rose">🌸 Rose</option><option value="night">🌙 Night</option><option value="sky">☁️ Sky</option></select>
+    </label>
+    <div class="dlg-actions"><button type="button" id="cCancel" data-i18n="cancel"></button><button class="primary" data-i18n="addCart"></button></div>
+  </form>
+</dialog>
+
+<aside id="cart">
+  <h2><span data-i18n="cart"></span><button id="closeCart">✕</button></h2>
+  <div id="items"></div>
+  <form class="foot" id="checkout">
+    <div class="total"><span data-i18n="total"></span><span id="total"></span></div>
+    <input id="name" data-ph="name" required maxlength="100">
+    <input id="email" type="email" data-ph="email" required maxlength="200">
+    <div id="shipFields" hidden>
+      <input id="phone" data-ph="phone" maxlength="30">
+      <textarea id="addr" rows="2" data-ph="addr" maxlength="500"></textarea>
+    </div>
+    <button class="primary" id="pay" data-i18n="pay"></button>
+  </form>
+</aside>
+
+<footer>© Love Shop</footer>
+<div id="toast"></div>
+<script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>หลังบ้าน | Love Shop</title>
+<link rel="stylesheet" href="/style.css">
+<style>table{width:100%;border-collapse:collapse;font-size:.9rem}td,th{padding:6px;border-bottom:1px solid var(--line);text-align:left}.f{display:grid;gap:6px;grid-template-columns:repeat(2,1fr)}.f .w{grid-column:1/-1}</style>
+</head>
+<body>
+<div class="page" style="max-width:900px">
+  <h1>หลังบ้าน Love Shop</h1>
+  <div class="box"><h2>สินค้า</h2><div id="products"></div>
+    <h3>เพิ่ม / แก้ไขสินค้า</h3>
+    <form id="pf" class="f">
+      <input type="hidden" name="id">
+      <select name="kind"><option value="letter">ของขวัญออนไลน์ (จดหมาย)</option><option value="physical">สินค้าจัดส่ง</option></select>
+      <input name="emoji" placeholder="อีโมจิ เช่น 💌" maxlength="8">
+      <input name="name_th" placeholder="ชื่อ (ไทย)" required>
+      <input name="name_en" placeholder="Name (EN)">
+      <input name="desc_th" placeholder="คำอธิบาย (ไทย)">
+      <input name="desc_en" placeholder="Description (EN)">
+      <input name="price" type="number" min="1" placeholder="ราคา (บาท)" required>
+      <label><input type="checkbox" name="active" checked style="width:auto"> เปิดขาย</label>
+      <button class="primary w">บันทึก</button>
+    </form>
+  </div>
+  <div class="box"><h2>คำสั่งซื้อล่าสุด</h2><div style="overflow:auto"><table id="orders"></table></div></div>
+</div>
+<script>
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+let products = []
+async function load() {
+  products = await (await fetch('/admin/api/products')).json()
+  document.getElementById('products').innerHTML = products.map(p => `<div class="row"><span>${esc(p.emoji)}</span><span class="n">${esc(p.name_th)} · ฿${p.price} · ${p.kind}${p.active ? '' : ' (ปิด)'}</span><button data-e="${p.id}">แก้ไข</button></div>`).join('')
+  const os = await (await fetch('/admin/api/orders')).json()
+  document.getElementById('orders').innerHTML = '<tr><th>เวลา</th><th>ผู้สั่ง</th><th>ยอด</th><th>สถานะ</th><th>จัดส่งที่</th></tr>' + os.map(o => `<tr><td>${esc(o.created_at)}</td><td>${esc(o.name)}<br>${esc(o.email)}</td><td>฿${o.total}</td><td>${o.status === 'paid' ? '✅ จ่ายแล้ว' : '⏳'}</td><td>${esc(o.phone)} ${esc(o.address)}</td></tr>`).join('')
+}
+document.getElementById('products').onclick = e => {
+  const id = e.target.dataset.e; if (!id) return
+  const p = products.find(x => x.id == id), f = document.getElementById('pf')
+  for (const k of ['id', 'kind', 'emoji', 'name_th', 'name_en', 'desc_th', 'desc_en', 'price']) f.elements[k].value = p[k]
+  f.elements.active.checked = !!p.active
+  scrollTo(0, document.body.scrollHeight)
+}
+document.getElementById('pf').onsubmit = async e => {
+  e.preventDefault()
+  const f = e.target, body = Object.fromEntries(new FormData(f)); body.active = f.elements.active.checked
+  const r = await fetch('/admin/api/products', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+  if (!r.ok) return alert((await r.json()).error)
+  f.reset(); f.elements.id.value = ''; load()
+}
+load()
+</script>
+</body>
+</html>
